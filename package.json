@@ -1,0 +1,26 @@
+{
+  "name": "multichain-defi-engine",
+  "private": true,
+  "packageManager": "pnpm@10.8.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev:api": "pnpm --filter @mde/engine-api dev",
+    "dev:planner": "pnpm --filter @mde/planner-worker dev",
+    "dev:executor": "pnpm --filter @mde/executor-worker dev",
+    "dev:analytics": "pnpm --filter @mde/analytics-worker dev",
+    "demo:planner": "tsx apps/planner-worker/src/index.ts",
+    "demo:executor": "tsx apps/executor-worker/src/index.ts",
+    "test": "tsx --test tests/**/*.test.ts",
+    "test:workspace": "pnpm -r --if-present test",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test",
+    "contracts:test:fork": "cd contracts && forge test --match-test testFork -vvvv",
+    "dev:backfill": "pnpm --filter @mde/receipt-backfill-worker dev",
+    "demo:backfill": "tsx apps/receipt-backfill-worker/src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.8.2"
+  }
+}

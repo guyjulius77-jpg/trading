@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ChainConfig {
+  id               String   @id @default(cuid())
+  chainKey         String   @unique
+  chainId          Int?
+  name             String
+  nativeGasToken   String
+  isEvm            Boolean
+  supportsBridges  Boolean
+  bridgeProviders  Json
+  protocolKeys     Json
+  rpcUrls          Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ProtocolDeployment {
+  id            String   @id @default(cuid())
+  protocolKey   String
+  chainKey      String
+  routerType    String
+  contracts     Json
+  feeModel      Json
+  callbackType  String?
+  supportedAssets Json?
+  notes         Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([protocolKey, chainKey])
+}
+
+model PoolMetadata {
+  id                    String   @id @default(cuid())
+  protocolKey           String
+  chainKey              String
+  poolAddress           String   @unique
+  token0                String
+  token1                String?
+  feeTier               Int?
+  liquidityDepth        String?
+  isFlashEnabled        Boolean?
+  reserveBorrowEnabled  Boolean?
+  updatedAt             DateTime @updatedAt
+  createdAt             DateTime @default(now())
+
+  @@index([protocolKey, chainKey])
+}
+
+model TradeIntent {
+  id                    String   @id
+  strategyType          String
+  sourceChain           String
+  destinationChain      String?
+  inputAssets           Json
+  outputAssets          Json
+  amountIn              String?
+  maxSlippageBps        Int
+  requireFlashLiquidity Boolean
+  allowedProtocols      Json
+  allowedBridgeProviders Json?
+  deadlineMs            BigInt
+  createdAt             DateTime @default(now())
+}
+
+model PlannedRoute {
+  id                    String   @id
+  intentId              String
+  sourceChain           String
+  destinationChain      String?
+  protocolKeys          Json
+  steps                 Json
+  estimatedPnlUsd       Float?
+  estimatedGasUsd       Float?
+  estimatedBridgeTimeSec Int?
+  score                 Float
+  warnings              Json
+  createdAt             DateTime @default(now())
+
+  @@index([intentId])
+}
+
+model ExecutionJob {
+  id              String   @id
+  intentId        String
+  routeId         String
+  status          String
+  chainLocks      Json
+  protocolLocks   Json
+  walletContext   String
+  gasBudget       String
+  flashPrincipal  String?
+  flashFee        String?
+  bridgeId        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([intentId])
+  @@index([routeId])
+  @@index([status])
+}
+
+model BridgeQuoteSnapshot {
+  id                  String   @id @default(cuid())
+  provider            String
+  sourceChain         String
+  destinationChain    String
+  sourceAsset         String
+  destinationAsset    String
+  amountIn            String
+  estimatedAmountOut  String
+  estimatedTimeSec    Int
+  requiresManualRedeem Boolean
+  gasTokenRequired    String
+  warnings            Json
+  createdAt           DateTime @default(now())
+}
+
+model PoolSnapshot {
+  id            String   @id @default(cuid())
+  protocolKey   String
+  chainKey      String
+  poolAddress   String
+  blockNumber   BigInt
+  snapshotDate  DateTime
+  payload       Json
+  createdAt     DateTime @default(now())
+
+  @@index([protocolKey, chainKey, poolAddress])
+}
+
+model LPPosition {
+  id                 String   @id
+  protocolKey        String
+  chainKey           String
+  poolAddress        String
+  owner              String
+  tickLower          Int?
+  tickUpper          Int?
+  liquidity          String?
+  realizedPnlUsd     Float?
+  unrealizedPnlUsd   Float?
+  accruedFeesUsd     Float?
+  anomalyFlags       Json?
+  updatedAt          DateTime @updatedAt
+  createdAt          DateTime @default(now())
+
+  @@index([protocolKey, chainKey, poolAddress])
+}
+
+model ExecutionLog {
+  id          String   @id @default(cuid())
+  jobId       String?
+  routeId     String?
+  intentId    String?
+  level       String
+  eventType   String
+  payload     Json
+  createdAt   DateTime @default(now())
+
+  @@index([jobId])
+  @@index([routeId])
+  @@index([intentId])
+}
